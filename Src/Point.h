@@ -11,9 +11,9 @@ struct Point
 };
 
 template<class Value>
-inline Value distance( const Point<Value> &a, const Point<Value> &b )
+inline Value distanceSquare( const Point<Value> &a, const Point<Value> &b )
 {
-  return std::sqrt( std::pow( a.x - b.x, 2 ) + std::pow( a.y - b.y, 2 ) );
+  return ( std::pow( a.x - b.x, 2 ) + std::pow( a.y - b.y, 2 ) );
 }
 
 #endif

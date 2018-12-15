@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <utility>
 
 #include "Point.h"
 
@@ -20,7 +21,13 @@ class ClosestPair2D
 
   private:
 
+    using PointPair = std::pair<size_t,size_t>;
+
     std::vector<Point<Value>> mPoints;
+
+    Value mDistanceSquare;
+
+    std::vector<PointPair> mPairs;
 };
 
 // public inline member functions

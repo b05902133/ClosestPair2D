@@ -43,19 +43,21 @@ Select::Data Select::select( std::vector<Data> datas, std::size_t k )
      groupMediums.push_back( *( itBegin + mR / 2 ) );
   }
 
-  Data medium = ( groupNum == 1 ) ? groupMediums.front() :
-                                    select( groupMediums, groupMediums.size() / 2 );
+  Data  medium    = ( groupNum == 1 ) ? groupMediums.front() :
+                                        select( groupMediums, groupMediums.size() / 2 );
+  int   medianNum = 0;
 
   for( const Data &data : datas )
   {
      if     ( data < medium ) lessThanMediums.push_back( data );
      else if( data > medium ) greaterThanMediums.push_back( data );
+     else                     ++medianNum;
   }
 
   if      ( k <= lessThanMediums.size()      )
     return select( lessThanMediums, k );
-  else if ( k == lessThanMediums.size() + 1 )
+  else if ( lessThanMediums.size() < k && k <= lessThanMediums.size() + medianNum )
     return medium;
   else
-    return select( greaterThanMediums, k - lessThanMediums.size() - 1 );
+    return select( greaterThanMediums, k - lessThanMediums.size() - medianNum );
 }

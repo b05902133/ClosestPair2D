@@ -59,7 +59,7 @@ ClosestPair2D::SolveResult ClosestPair2D::solve( const PointIndexes &pointIndexe
   PointIndexes  pointIndexesRight;
   vector<Value> xs;
 
-  //Select      select;
+  Select      select;
   Value       xMedian;
   SolveResult resultMerge;
   SolveResult resultLeft;
@@ -69,9 +69,7 @@ ClosestPair2D::SolveResult ClosestPair2D::solve( const PointIndexes &pointIndexe
   for( size_t i : pointIndexes )
      xs.push_back( mPoints[i].x );
 
-  sort( xs.begin(), xs.end() );
-
-  xMedian = xs[xs.size()/2+1]; // select.select( xs, xs.size() / 2 + 1 );
+  xMedian = select.select( xs, xs.size() / 2 + 1 );
 
   for( size_t i : pointIndexes )
   {

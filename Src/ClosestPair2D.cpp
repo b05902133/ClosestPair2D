@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <iostream>
 using namespace std;
 
 #include "Select.h"
@@ -43,7 +44,7 @@ std::string ClosestPair2D::result()
   oss << mDistanceSquare << " " << mPairs.size() << "\n";
 
   for( const PointPair &pointPair : mPairs )
-     oss << pointPair.first << " " << pointPair.second << "\n";
+     oss << pointPair.first + 1 << " " << pointPair.second + 1 << "\n";
 
   return oss.str();
 }
@@ -52,35 +53,15 @@ std::string ClosestPair2D::result()
 // private member functions
 ClosestPair2D::SolveResult ClosestPair2D::solve( const PointIndexes &pointIndexes )
 {
-  assert( !pointIndexes.empty() ); // precondition
-
-  SolveResult resultMerge;
-
-  if( pointIndexes.size() <= 2 )
-  {
-    if( pointIndexes.size() == 1 )
-    {
-      resultMerge.distanceSquare = numeric_limits<Value>::max();
-    }
-    else // 2 points
-    {
-      PointPair pointPair = make_pair( pointIndexes.front(), pointIndexes.back() );
-
-      if( pointPair.first > pointPair.second )
-        swap( pointPair.first, pointPair.second );
-
-      resultMerge.distanceSquare = distanceSquare( mPoints[pointPair.first], mPoints[pointPair.second] );
-      resultMerge.pairs.push_back( pointPair );
-    }
-    return resultMerge;
-  }
+  if( pointIndexes.size() <= 1 ) return SolveResult{ numeric_limits<Value>::max(), {} };
 
   PointIndexes  pointIndexesLeft;
   PointIndexes  pointIndexesRight;
   vector<Value> xs;
 
-  Select      select;
+  //Select      select;
   Value       xMedian;
+  SolveResult resultMerge;
   SolveResult resultLeft;
   SolveResult resultRight;
   Value       distance;
@@ -88,13 +69,18 @@ ClosestPair2D::SolveResult ClosestPair2D::solve( const PointIndexes &pointIndexe
   for( size_t i : pointIndexes )
      xs.push_back( mPoints[i].x );
 
-  xMedian = select.select( xs, xs.size() / 2 + 1 );
+  sort( xs.begin(), xs.end() );
+
+  xMedian = xs[xs.size()/2+1]; // select.select( xs, xs.size() / 2 + 1 );
 
   for( size_t i : pointIndexes )
   {
      if( mPoints[i].x < xMedian ) pointIndexesLeft.push_back  ( i );
      else                         pointIndexesRight.push_back ( i );
   }
+
+  if( pointIndexesLeft.empty() || pointIndexesRight.empty() )
+    return solveSameX( pointIndexes );
 
   resultLeft  = solve( pointIndexesLeft   );
   resultRight = solve( pointIndexesRight  );
@@ -113,41 +99,64 @@ ClosestPair2D::SolveResult ClosestPair2D::solve( const PointIndexes &pointIndexe
   {
      const Point<Value> &pLeft = mPoints[pointIndexesLeft[i]];
 
+     if( xMedian - pLeft.x > distance ) continue;
+
+     // find backward to the first point above a ditance **distance**
      for( ; j > 0 ; --j )
      {
+        if( j >= pointIndexesRight.size() ) continue;
+
         const Point<Value> &pRight = mPoints[pointIndexesRight[j]];
 
         if( pRight.y - pLeft.y > distance ) break;
      }
+     // end find backward to the first point above a ditance **distance**
 
      for( ; j < pointIndexesRight.size() ; ++j )
      {
         const Point<Value> &pRight = mPoints[pointIndexesRight[j]];
 
+        if( pRight.x - xMedian > distance ) continue;
         if( pRight.y - pLeft.y > distance ) continue;
         if( pLeft.y - pRight.y > distance ) break;
 
-        Value distanceS = distanceSquare( pLeft, pRight );
-
-        if( resultMerge.distanceSquare < distanceS  ) continue;
-
-        PointPair pointPair = make_pair( pointIndexesLeft[i], pointIndexesRight[j] );
-
-        if( pointPair.first > pointPair.second )
-          swap( pointPair.first, pointPair.second );
-
-        if( resultMerge.distanceSquare > distanceS )
-        {
-          resultMerge.distanceSquare = distanceS;
-          resultMerge.pairs.resize( 1 );
-          resultMerge.pairs.front() = pointPair;
-        }
-        else // equal
-        {
-          resultMerge.pairs.push_back( pointPair );
-        }
+        resultMerge = betterResult( resultMerge, make_pair( pointIndexesLeft[i], pointIndexesRight[j] ) );
      }
   }
   return resultMerge;
+}
+
+ClosestPair2D::SolveResult ClosestPair2D::solveSameX( const PointIndexes &pointIndexes )
+{
+  SolveResult resultSameX = { numeric_limits<Value>::max(), {} };
+
+  for( size_t i = 0 ; i < pointIndexes.size() - 1 ; ++i )
+  {
+     size_t indexA = pointIndexes[i];
+     size_t indexB = pointIndexes[i+1];
+
+     resultSameX = betterResult( resultSameX, make_pair( indexA, indexB ) );
+  }
+  return resultSameX;
+}
+
+ClosestPair2D::SolveResult ClosestPair2D::betterResult( SolveResult resultCurrent, PointPair pointPair )
+{
+  Value distanceS = distanceSquare( mPoints[pointPair.first], mPoints[pointPair.second] );
+
+  if( resultCurrent.distanceSquare < distanceS  ) return resultCurrent;
+
+  if( pointPair.first > pointPair.second )
+    swap( pointPair.first, pointPair.second );
+
+  if( resultCurrent.distanceSquare > distanceS )
+  {
+    resultCurrent.distanceSquare  = distanceS;
+    resultCurrent.pairs           = { pointPair };
+  }
+  else // equal
+    resultCurrent.pairs.push_back( pointPair );
+
+  return resultCurrent;
 }
 // end private member functions

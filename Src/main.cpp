@@ -22,7 +22,7 @@ int main()
   }
   solver.solve();
 
-  cout << solver.result() << "\n";
+  cout << solver.result();
 
   return 0;
 }

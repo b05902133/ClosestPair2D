@@ -30,7 +30,9 @@ class ClosestPair2D
       std::vector<PointPair>  pairs;
     };
 
-    SolveResult solve( const PointIndexes &pointIndexes );
+    SolveResult solve       ( const PointIndexes  &pointIndexes );
+    SolveResult solveSameX  ( const PointIndexes  &pointIndexes );
+    SolveResult betterResult( SolveResult         resultCurrent, PointPair pointPair );
 
     std::vector<Point<Value>> mPoints;
 

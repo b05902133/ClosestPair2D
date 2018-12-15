@@ -21,7 +21,16 @@ class ClosestPair2D
 
   private:
 
-    using PointPair = std::pair<size_t,size_t>;
+    using PointPair     = std::pair<size_t,size_t>;
+    using PointIndexes  = std::vector<size_t>;
+
+    struct SolveResult
+    {
+      Value                   distanceSquare;
+      std::vector<PointPair>  pairs;
+    };
+
+    SolveResult solve( const PointIndexes &pointIndexes );
 
     std::vector<Point<Value>> mPoints;
 

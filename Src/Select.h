@@ -7,7 +7,7 @@ class Select
 {
   public:
 
-    using Data = double;
+    using Data = long;
 
     Data select( std::vector<Data> datas, std::size_t k );
 
